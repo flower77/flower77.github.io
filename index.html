@@ -214,10 +214,10 @@
 <p>输出结果：（略）<br>通过仔细对比案例1和案例2，应该能看出个大概，最起码能发现NIO的实现方式比叫复杂。有了一个大概的印象可以进入下一步了。</p>
 <p>##Buffer的使用</p>
 <p>从案例2中可以总结出使用Buffer一般遵循下面几个步骤：</p>
-<p>分配空间（ByteBuffer buf = ByteBuffer.allocate(1024); 还有一种allocateDirector后面再陈述）<br>写入数据到Buffer(int bytesRead = fileChannel.read(buf);)<br>调用filp()方法（ buf.flip();）<br>从Buffer中读取数据（System.out.print((char)buf.get());）<br>调用clear()方法或者compact()方法<br>Buffer顾名思义：缓冲区，实际上是一个容器，一个连续数组。Channel提供从文件、网络读取数据的渠道，但是读写的数据都必须经过Buffer。如下图：<br><img src="img/5.jpg" alt=""><br>向Buffer中写数据：</p>
+<p>分配空间（ByteBuffer buf = ByteBuffer.allocate(1024); 还有一种allocateDirector后面再陈述）<br>写入数据到Buffer(int bytesRead = fileChannel.read(buf);)<br>调用filp()方法（ buf.flip();）<br>从Buffer中读取数据（System.out.print((char)buf.get());）<br>调用clear()方法或者compact()方法<br>Buffer顾名思义：缓冲区，实际上是一个容器，一个连续数组。Channel提供从文件、网络读取数据的渠道，但是读写的数据都必须经过Buffer。如下图：<br><img src="http://img.blog.csdn.net/20160519212332738" alt=""><br>向Buffer中写数据：</p>
 <p>从Channel写到Buffer (fileChannel.read(buf))<br>通过Buffer的put()方法 （buf.put(…)）<br>从Buffer中读取数据：</p>
 <p>从Buffer读取到Channel (channel.write(buf))<br>使用get()方法从Buffer中读取数据 （buf.get()）<br>可以把Buffer简单地理解为一组基本数据类型的元素列表，它通过几个变量来保存这个数据的当前位置状态：capacity, position, limit, mark：</p>
-<p>索引               说明<br>capacity     缓冲区数组的总长度<br>position     下一个要操作的数据元素的位置<br>limit     缓冲区数组中不可操作的下一个元素的位置：limit&lt;=capacity<br>mark     用于记录当前position的前一个位置或者默认是0<br><img src="img/6.jpg" alt=""><br>无图无真相，举例：我们通过ByteBuffer.allocate(11)方法创建了一个11个byte的数组的缓冲区，初始状态如上图，position的位置为0，capacity和limit默认都是数组长度。当我们写入5个字节时，变化如下图：<br><img src="img/7.jpg" alt=""><br>这时我们需要将缓冲区中的5个字节数据写入Channel的通信信道，所以我们调用ByteBuffer.flip()方法，变化如下图所示(position设回0，并将limit设成之前的position的值)：<br><img src="img/8.jpg" alt=""><br>这时底层操作系统就可以从缓冲区中正确读取这个5个字节数据并发送出去了。在下一次写数据之前我们再调用clear()方法，缓冲区的索引位置又回到了初始位置。</p>
+<p>索引               说明<br>capacity     缓冲区数组的总长度<br>position     下一个要操作的数据元素的位置<br>limit     缓冲区数组中不可操作的下一个元素的位置：limit&lt;=capacity<br>mark     用于记录当前position的前一个位置或者默认是0<br><img src="http://img.blog.csdn.net/20160519212348550" alt=""><br>无图无真相，举例：我们通过ByteBuffer.allocate(11)方法创建了一个11个byte的数组的缓冲区，初始状态如上图，position的位置为0，capacity和limit默认都是数组长度。当我们写入5个字节时，变化如下图：<br><img src="http://img.blog.csdn.net/20160519212417971" alt=""><br>这时我们需要将缓冲区中的5个字节数据写入Channel的通信信道，所以我们调用ByteBuffer.flip()方法，变化如下图所示(position设回0，并将limit设成之前的position的值)：<br><img src="http://img.blog.csdn.net/20160519212431988" alt=""><br>这时底层操作系统就可以从缓冲区中正确读取这个5个字节数据并发送出去了。在下一次写数据之前我们再调用clear()方法，缓冲区的索引位置又回到了初始位置。</p>
 <p>调用clear()方法：position将被设回0，limit设置成capacity，换句话说，Buffer被清空了，其实Buffer中的数据并未被清楚，只是这些标记告诉我们可以从哪里开始往Buffer里写数据。如果Buffer中有一些未读的数据，调用clear()方法，数据将“被遗忘”，意味着不再有任何标记会告诉你哪些数据被读过，哪些还没有。如果Buffer中仍有未读的数据，且后续还需要这些数据，但是此时想要先先写些数据，那么使用compact()方法。compact()方法将所有未读的数据拷贝到Buffer起始处。然后将position设到最后一个未读元素正后面。limit属性依然像clear()方法一样，设置成capacity。现在Buffer准备好写数据了，但是不会覆盖未读的数据。</p>
 <p>通过调用Buffer.mark()方法，可以标记Buffer中的一个特定的position，之后可以通过调用Buffer.reset()方法恢复到这个position。Buffer.rewind()方法将position设回0，所以你可以重读Buffer中的所有数据。limit保持不变，仍然表示能从Buffer中读取多少个元素。</p>
 <p>##SocketChannel</p>
@@ -418,11 +418,11 @@
 <p>“请把第一条指令给我说一下”    0x3704 继续问我要东西</p>
 <p>我还不太熟练，找了半天才说：</p>
 <p>“iload_0”</p>
-<p>于是他就操作柜子上的机械手把0号抽屉的一个数30扔到到了工作台上的一个桶里，这个桶很窄，没法并排放两个数， 但是很深<br><img src="img/1.jpg" alt=""><br>然后0x3704说 “下一条指令”</p>
+<p>于是他就操作柜子上的机械手把0号抽屉的一个数30扔到到了工作台上的一个桶里，这个桶很窄，没法并排放两个数， 但是很深<br><img src="http://ww2.sinaimg.cn/large/7cc829d3jw1f3zalrw5izj20g00cvt91.jpg" alt=""><br>然后0x3704说 “下一条指令”</p>
 <p>“iload_1”</p>
-<p>于是1号抽屉的一个数40也被扔到了桶里，正好压在30上面， 从桶上面就看不到30了。<br><img src="img/2.jpg" alt=""><br>“下一条指令”</p>
+<p>于是1号抽屉的一个数40也被扔到了桶里，正好压在30上面， 从桶上面就看不到30了。<br><img src="http://ww3.sinaimg.cn/large/7cc829d3jw1f3zalnyp5vj20gk0biab6.jpg" alt=""><br>“下一条指令”</p>
 <p>”iadd“</p>
-<p>于是他就把两个数从桶里取了出来， 做了个飞快的动作， 这两个数变成了一个数 70 ！， 然后他又把70 放到了桶里。<br><img src="img/3.jpg" alt=""><br>“下一条指令”</p>
+<p>于是他就把两个数从桶里取了出来， 做了个飞快的动作， 这两个数变成了一个数 70 ！， 然后他又把70 放到了桶里。<br><img src="http://ww3.sinaimg.cn/large/7cc829d3jw1f3zaln39gaj20ot0zkwfz.jpg" alt=""><br>“下一条指令”</p>
 <p>“istore_0”</p>
 <p>于是他把70从桶里捞出来， 放到了柜子上编号为0的地方， 之前的30就被扔掉了。</p>
 <p>我看的目瞪口呆，这厮是在干嘛???</p>
@@ -438,7 +438,7 @@
 <p>“我们的指令可以优化啊， 不过这我也不太懂”</p>
 <p>这个游戏我整整完了一天，没有线程找我的时候， 我就闲着， String说得对， 熟练以后简直太简单了。</p>
 <p>String 就不一样了， 几乎每时每刻都线程给他打电话要指令， 这么没办法， String确实是虚拟机的骨干和精英， 使用频繁，业务纯熟，忙而不乱。</p>
-<p>有时候我会看到线程有不止一个工作台， 而是一摞子工作台， 也是一个压一个， 线程们都很老实，永远在最上面那个工作， 从来不会先干下面的活。<br><img src="img/4.jpg" alt=""><br>我问java.util.Stack :”这些工作台也是栈吧”</p>
+<p>有时候我会看到线程有不止一个工作台， 而是一摞子工作台， 也是一个压一个， 线程们都很老实，永远在最上面那个工作， 从来不会先干下面的活。<br><img src="http://ww4.sinaimg.cn/large/7cc829d3jw1f3zalm9smfj20yn0zkwgv.jpg" alt=""><br>我问java.util.Stack :”这些工作台也是栈吧”</p>
 <p>“猜的不错，学名叫Java 栈，每个线程都有一个，  其中的每个工作台你看过了 ，学名叫栈帧， 知道不？  每个台子都代表一个方法调用， 这一摞工作台就方法调用方法导致的啊 “</p>
 <p>确实是， 因为我发现一旦调用新方法， 立刻就会形成一个新的工作台， 压在老的上面。 方法调用完成后， 栈顶的工作台就被销毁了， 线程会在底下的工作台继续机械的干活。</p>
 <p>##第四回 快乐假期</p>
@@ -532,7 +532,7 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>1.在系统环境变量的path后一段“F:\ProgramFiles(x86)\mysql5.6.29\bin”，即解压后，mysql的bin目录路径。<br>2.在mysql根目录中找到my-default.ini这个配置文件。把basedir换成了mysql的安装目录，把datadir换成了mysql安装目录下的data目录。（图中路径不对 自己看着改）<img src="img/a.jpg" alt=""><br>3.打开cmd命令行，cd到mysql安装目录下的bin目录，输入“mysqld -install”安装服务，安装成功后。使用“net start mysql”和“net stop mysql”来启动和停止mysql服务，或者在任务管理器的“服务”中操作。</p>
+        <p>1.在系统环境变量的path后一段“F:\ProgramFiles(x86)\mysql5.6.29\bin”，即解压后，mysql的bin目录路径。<br>2.在mysql根目录中找到my-default.ini这个配置文件。把basedir换成了mysql的安装目录，把datadir换成了mysql安装目录下的data目录。（图中路径不对 自己看着改）<img src="http://imgsrc.baidu.com/forum/w%3D580/sign=6ff796d8b5b7d0a27bc90495fbee760d/4e4d6cf0f736afc3bbf2c50fb419ebc4b64512e4.jpg" alt=""><br>3.打开cmd命令行，cd到mysql安装目录下的bin目录，输入“mysqld -install”安装服务，安装成功后。使用“net start mysql”和“net stop mysql”来启动和停止mysql服务，或者在任务管理器的“服务”中操作。</p>
 
       
     </div>

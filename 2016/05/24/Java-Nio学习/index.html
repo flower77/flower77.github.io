@@ -12,15 +12,15 @@
 <meta property="og:url" content="http://yoursite.com/2016/05/24/Java-Nio学习/index.html">
 <meta property="og:site_name" content="Flower's Home">
 <meta property="og:description" content="现在使用NIO的场景越来越多，很多网上的技术框架或多或少的使用NIO技术，譬如Tomcat，Jetty。学习和掌握NIO技术已经不是一个JAVA攻城狮的加分技能，而是一个必备技能。再者，现在互联网的面试中上点level的都会涉及一下NIO或者AIO的问题（AIO下次再讲述，本篇主要讲述NIO）,掌握好NIO也能帮助你获得一份较好的offer。 驱使博主写这篇文章的关键是网上关于NIO的文章并不是很">
-<meta property="og:image" content="http://yoursite.com/img/5.jpg">
-<meta property="og:image" content="http://yoursite.com/img/6.jpg">
-<meta property="og:image" content="http://yoursite.com/img/7.jpg">
-<meta property="og:image" content="http://yoursite.com/img/8.jpg">
-<meta property="og:updated_time" content="2016-05-24T03:49:28.049Z">
+<meta property="og:image" content="http://img.blog.csdn.net/20160519212332738">
+<meta property="og:image" content="http://img.blog.csdn.net/20160519212348550">
+<meta property="og:image" content="http://img.blog.csdn.net/20160519212417971">
+<meta property="og:image" content="http://img.blog.csdn.net/20160519212431988">
+<meta property="og:updated_time" content="2016-05-24T04:00:09.884Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Java Nio学习">
 <meta name="twitter:description" content="现在使用NIO的场景越来越多，很多网上的技术框架或多或少的使用NIO技术，譬如Tomcat，Jetty。学习和掌握NIO技术已经不是一个JAVA攻城狮的加分技能，而是一个必备技能。再者，现在互联网的面试中上点level的都会涉及一下NIO或者AIO的问题（AIO下次再讲述，本篇主要讲述NIO）,掌握好NIO也能帮助你获得一份较好的offer。 驱使博主写这篇文章的关键是网上关于NIO的文章并不是很">
-<meta name="twitter:image" content="http://yoursite.com/img/5.jpg">
+<meta name="twitter:image" content="http://img.blog.csdn.net/20160519212332738">
   
     <link rel="alternative" href="/atom.xml" title="Flower&#39;s Home" type="application/atom+xml">
   
@@ -225,10 +225,10 @@
 <p>输出结果：（略）<br>通过仔细对比案例1和案例2，应该能看出个大概，最起码能发现NIO的实现方式比叫复杂。有了一个大概的印象可以进入下一步了。</p>
 <p>##Buffer的使用</p>
 <p>从案例2中可以总结出使用Buffer一般遵循下面几个步骤：</p>
-<p>分配空间（ByteBuffer buf = ByteBuffer.allocate(1024); 还有一种allocateDirector后面再陈述）<br>写入数据到Buffer(int bytesRead = fileChannel.read(buf);)<br>调用filp()方法（ buf.flip();）<br>从Buffer中读取数据（System.out.print((char)buf.get());）<br>调用clear()方法或者compact()方法<br>Buffer顾名思义：缓冲区，实际上是一个容器，一个连续数组。Channel提供从文件、网络读取数据的渠道，但是读写的数据都必须经过Buffer。如下图：<br><img src="img/5.jpg" alt=""><br>向Buffer中写数据：</p>
+<p>分配空间（ByteBuffer buf = ByteBuffer.allocate(1024); 还有一种allocateDirector后面再陈述）<br>写入数据到Buffer(int bytesRead = fileChannel.read(buf);)<br>调用filp()方法（ buf.flip();）<br>从Buffer中读取数据（System.out.print((char)buf.get());）<br>调用clear()方法或者compact()方法<br>Buffer顾名思义：缓冲区，实际上是一个容器，一个连续数组。Channel提供从文件、网络读取数据的渠道，但是读写的数据都必须经过Buffer。如下图：<br><img src="http://img.blog.csdn.net/20160519212332738" alt=""><br>向Buffer中写数据：</p>
 <p>从Channel写到Buffer (fileChannel.read(buf))<br>通过Buffer的put()方法 （buf.put(…)）<br>从Buffer中读取数据：</p>
 <p>从Buffer读取到Channel (channel.write(buf))<br>使用get()方法从Buffer中读取数据 （buf.get()）<br>可以把Buffer简单地理解为一组基本数据类型的元素列表，它通过几个变量来保存这个数据的当前位置状态：capacity, position, limit, mark：</p>
-<p>索引               说明<br>capacity     缓冲区数组的总长度<br>position     下一个要操作的数据元素的位置<br>limit     缓冲区数组中不可操作的下一个元素的位置：limit&lt;=capacity<br>mark     用于记录当前position的前一个位置或者默认是0<br><img src="img/6.jpg" alt=""><br>无图无真相，举例：我们通过ByteBuffer.allocate(11)方法创建了一个11个byte的数组的缓冲区，初始状态如上图，position的位置为0，capacity和limit默认都是数组长度。当我们写入5个字节时，变化如下图：<br><img src="img/7.jpg" alt=""><br>这时我们需要将缓冲区中的5个字节数据写入Channel的通信信道，所以我们调用ByteBuffer.flip()方法，变化如下图所示(position设回0，并将limit设成之前的position的值)：<br><img src="img/8.jpg" alt=""><br>这时底层操作系统就可以从缓冲区中正确读取这个5个字节数据并发送出去了。在下一次写数据之前我们再调用clear()方法，缓冲区的索引位置又回到了初始位置。</p>
+<p>索引               说明<br>capacity     缓冲区数组的总长度<br>position     下一个要操作的数据元素的位置<br>limit     缓冲区数组中不可操作的下一个元素的位置：limit&lt;=capacity<br>mark     用于记录当前position的前一个位置或者默认是0<br><img src="http://img.blog.csdn.net/20160519212348550" alt=""><br>无图无真相，举例：我们通过ByteBuffer.allocate(11)方法创建了一个11个byte的数组的缓冲区，初始状态如上图，position的位置为0，capacity和limit默认都是数组长度。当我们写入5个字节时，变化如下图：<br><img src="http://img.blog.csdn.net/20160519212417971" alt=""><br>这时我们需要将缓冲区中的5个字节数据写入Channel的通信信道，所以我们调用ByteBuffer.flip()方法，变化如下图所示(position设回0，并将limit设成之前的position的值)：<br><img src="http://img.blog.csdn.net/20160519212431988" alt=""><br>这时底层操作系统就可以从缓冲区中正确读取这个5个字节数据并发送出去了。在下一次写数据之前我们再调用clear()方法，缓冲区的索引位置又回到了初始位置。</p>
 <p>调用clear()方法：position将被设回0，limit设置成capacity，换句话说，Buffer被清空了，其实Buffer中的数据并未被清楚，只是这些标记告诉我们可以从哪里开始往Buffer里写数据。如果Buffer中有一些未读的数据，调用clear()方法，数据将“被遗忘”，意味着不再有任何标记会告诉你哪些数据被读过，哪些还没有。如果Buffer中仍有未读的数据，且后续还需要这些数据，但是此时想要先先写些数据，那么使用compact()方法。compact()方法将所有未读的数据拷贝到Buffer起始处。然后将position设到最后一个未读元素正后面。limit属性依然像clear()方法一样，设置成capacity。现在Buffer准备好写数据了，但是不会覆盖未读的数据。</p>
 <p>通过调用Buffer.mark()方法，可以标记Buffer中的一个特定的position，之后可以通过调用Buffer.reset()方法恢复到这个position。Buffer.rewind()方法将position设回0，所以你可以重读Buffer中的所有数据。limit保持不变，仍然表示能从Buffer中读取多少个元素。</p>
 <p>##SocketChannel</p>
